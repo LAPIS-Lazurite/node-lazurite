@@ -1,0 +1,24 @@
+{
+  "name": "node-lazurite",
+  "version": "0.0.0",
+  "description": "node for LazDriver by v8",
+  "main": "lazurite.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LAPIS-Lazurite/node-lazurite.git"
+  },
+  "author": "Naotaka Saito",
+  "license": "Apache-2.0",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/LAPIS-Lazurite/node-lazurite/issues"
+  },
+  "homepage": "https://github.com/LAPIS-Lazurite/node-lazurite#readme"
+}
