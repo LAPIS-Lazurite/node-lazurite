@@ -929,10 +929,8 @@ static void getEnhanceAck(const FunctionCallbackInfo<Value>& args) {
 
 #if (V8_MAJOR_VERSION == 8)
 	obj->Set(context,String::NewFromUtf8(isolate,"payload").ToLocalChecked(),str);
-	//obj->Set(context,String::NewFromUtf8(isolate,"length").ToLocalChecked(),Integer::New(isolate,size));
 #else
 	obj->Set(String::NewFromUtf8(isolate,"payload"),str);
-	//obj->Set(String::NewFromUtf8(isolate,"length"),Integer::New(isolate,size));
 #endif
 
 	args.GetReturnValue().Set(str);

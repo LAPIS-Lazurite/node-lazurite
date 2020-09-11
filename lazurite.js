@@ -255,8 +255,8 @@ module.exports = function(config) {
 	 *  ]
 	 */
 	node.setEnhanceAck = function(eack) {
-		let devCount = eack.data.length;
-		let ackSize = eack.data[0].ack.length;
+		let devCount = eack.length;
+		let ackSize = eack[0].data.length;
 		if((devCount == 0) || (ackSize == 0)) {
 			lib.setEnhanceAck(null,0);
 			return;
@@ -273,14 +273,14 @@ module.exports = function(config) {
 		uint8Array[1] = devCount >> 8;
 		uint8Array[2] = ackSize&0x0ff;
 		uint8Array[3] = ackSize >> 8;
-		for(var d of eack.data) {
-			if(ackSize != d.ack.length) {
+		for(var d of eack) {
+			if(ackSize != d.data.length) {
 				lazurite.lib.setEnhanceAck(null,0);
 				throw new Error(`Lazurite EnhanceAck different length is included. ${d}`);
 			}
 			uint8Array[index] = d.addr&0x0ff,index += 1;
 			uint8Array[index] = d.addr>>8,index += 1;
-			for(var a of d.ack) {
+			for(var a of d.data) {
 				uint8Array[index] = a,index += 1;
 			}
 		}
