@@ -2,7 +2,7 @@
 node for LazDriver by v8
 
 node-lazuriteはnode.jsで動作するlazuriteのドライバインタフェースです。
-サンプルはexample/sampLe_trx.jsを参照してください。
+サンプルはexample/sample_trx.jsを参照してください。
 
 ## 1. 初期化
 
@@ -179,12 +179,43 @@ function send_5() {
 }
 ```
 
-#6. その他設定
+
+
+# 6.  その他設定
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
 | setKey(key) | key | AES128bitの鍵情報を設定するための関数です。<br>key="": AES128bitを解除します。<br>key=16byte HEX String : AES1238bitによる暗号を有効にします。<br> 暗号鍵は	LazuriteIDEではLazuriteIde/bin/aes_keygen.exe, Raspberry Piではdriver/LazDriver/lib/aes_keygenで生成できます。|
-| setAckRea(on) | on | ackの有効/無効を設定する関数です。<br> on=false: ACKを強制的にOFFにします。<br> on=true: ACK受信が可能なときはACKを有効にします。|
+| setAckReq(on) | on | ackの有効/無効を設定する関数です。<br> on=false: ACKを強制的にOFFにします。<br> on=true: ACK受信が可能なときはACKを有効にします。|
+| setBroadcastEnb(on) | on | broadcastの受信可否を設定します。<br>on=false: broadcastの受信を禁止します。<br>on=true: broadcastの受信を許可します。(default) |
+| setEnhanceAck(eack) | eack | EnhanceAckの設定を行います。EnhanceAckはPANグループ内の通信のACKに最大16バイトのデータを付けることができる機能です。(eackのデータフォーマット[[]()]はeackのデータフォーマットを参照してください。 |
+
+
+
+## 6.1 eackのデータフォーマット
+
+eackはアドレスごとにackに乗せるデータを指定します。
+
+```js
+eack = [
+   {addr: addr1, data: [data2]},
+   {addr: addr2, data: [data2]},
+]
+```
+
+eack[].addr:   送信先のアドレスです。
+eack[].data[]:  0 ~ 255の値で、最大16このデータを指定します。最後はアドレスを0xFFFFのデータを登録してください。アドレスが一致しなかったときにこのデータを送信します。
+
+(ex)
+
+```js
+let eack = [
+   { addr: 0x0001, data:[1,2,3]},
+   { addr: 0x0002, data:[4,5,6]},
+   { addr: 0xFFFF, data:[255,255,255]}   
+];
+```
+
 
 
 #7. 終了処理

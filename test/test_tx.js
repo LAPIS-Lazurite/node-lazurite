@@ -56,7 +56,7 @@ function callback(msg) {
 let timer = null;
 let i = 0;
 timer = setInterval(function() {
-	funcarray[i]();
+	funcarray[i](i);
 	i+=1;
 	if(i >= funcarray.length) {
 		i = 0;
@@ -66,7 +66,7 @@ timer = setInterval(function() {
 // sample of tx
 //unicast by short adressing mode
 
-function send_0() {
+function send_0(n) {
 	if(keyOn) {
 		keyOn = false;
 		lazurite.setKey("");
@@ -79,41 +79,46 @@ function send_0() {
 		dst_addr : 0x0001,									// short address of destination
 		payload: "send_0"	// payload
 	});
+	ret.func = funcarray[n].name;
 	console.log(ret);
 }
 //group cast
-function send_1() {
+function send_1(n) {
 	let ret = lazurite.send({
 		panid : 0xabcd,											// panid
 		dst_addr : 0xffff,									// all in pan
 		payload: "send_1"	// payload
 	});
+	ret.func = funcarray[n].name;
 	console.log(ret);
 }
 //
 //broadcast cast
-function send_2() {
+function send_2(n) {
 	let ret = lazurite.send({
 		panid : 0xffff,											// global panid
 		dst_addr : 0xffff,									// global address
 		payload: "send_2"	// payload
 	});
+	ret.func = funcarray[n].name;
 	console.log(ret);
 }
 //example of 64bit adressing mode
-function send_3() {
+function send_3(n) {
 	let ret = lazurite.send({							// automatically use send64
 		dst_addr : dest,										// 64bit mac address of destination
 		payload: "send_3"	// payload
 	});
+	ret.func = funcarray[n].name;
 	console.log(ret);
 }
 //example of 64bit adressing mode
-function send_4() {
+function send_4(n) {
 	let ret = lazurite.send64({							// force to use 64bit addressing mode
 		dst_addr : dest,											// 64bit mac address of destination
 		payload: "send_4"		// payload
 	});
+	ret.func = funcarray[n].name;
 	console.log(ret);
 }
 let funcarray = [

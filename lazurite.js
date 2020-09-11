@@ -154,11 +154,13 @@ module.exports = function(config) {
 			if(ret >= 0) {
 				result.success = true;
 				result.rssi = ret;
-				result.eack = lib.getEnhanceAck();
 			} else {
 				result.success = false;
 				result.errcode = ret;
 				result.errmsg = ERROR[ret];
+			}
+			if(ret > 0 ) {
+				result.eack = lib.getEnhanceAck();
 			}
 		} else {
 			throw new Error("lazurite send msg.panid error.\nmsg.dst_addr > 65535 : 64bit addressing mode. msg.panid is not required.\nmsg.dst_addr <= 65535 : short addressing mode. msg.panid is required.\nif force to send 64bit addressing mode in case of msg.dst_addr <=65535,please use send64")
