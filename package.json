@@ -1,10 +1,11 @@
 {
-  "name": "node-lazurite",
+  "name": "lazurite",
   "version": "0.1.0",
   "description": "node for LazDriver by v8",
   "main": "lazurite.js",
   "directories": {
-    "example": "example"
+    "example": "example",
+    "test": "test"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -20,5 +21,9 @@
   "bugs": {
     "url": "https://github.com/LAPIS-Lazurite/node-lazurite/issues"
   },
-  "homepage": "https://github.com/LAPIS-Lazurite/node-lazurite#readme"
+  "homepage": "https://github.com/LAPIS-Lazurite/node-lazurite#readme",
+  "keywords": [
+    "lazurite",
+    "iot"
+  ]
 }
