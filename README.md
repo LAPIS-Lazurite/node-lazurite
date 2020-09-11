@@ -4,7 +4,7 @@ node for LazDriver by v8
 node-lazuriteはnode.jsで動作するlazuriteのドライバインタフェースです。
 サンプルはexample/sample_trx.jsを参照してください。
 
-## 1. 初期化
+## 2. 初期化
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ node-lazuriteはnode.jsで動作するlazuriteのドライバインタフェー�
 
 
 ```js
-const LAZURITE = require("node-lazurite");
+const LAZURITE = require("lazurite");
 
 // Initialize
 // options.be							false(default): little endian,    true: little endian
@@ -26,7 +26,7 @@ let lazurite = new LAZURITE(options);
 lazurite.init();
 ```
 
-## 2. アドレスの設定や確認
+## 3. アドレスの設定や確認
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ console.log(lazurite.getMyAddr64());
 console.log(`0x${('0000'+lazurite.getMyAddress().toString(16)).substr(-4)}`);
 ```
 
-## 3. 無線の初期化
+## 4. 無線の初期化
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ lazurite.begin({
 });
 ```
 
-## 4. 受信用イベントハンドラの登録と受信の有効化
+## 5. 受信用イベントハンドラの登録と受信の有効化
 
 ```js
 // start rx start
@@ -85,7 +85,7 @@ function callback(msg) {
 	});
 }
 ```
-## 5. 送信
+## 6. 送信
 timerに送信関数を登録して繰り返し送信するサンプルです。
 送信モードの設定は各send関数を参照してください。
 
@@ -95,7 +95,7 @@ let timer = null;
 timer = setInterval(send_1,1000);
 ```
 
-### 5-1.  ショートアドレスによるユニキャスト
+### 6-1.  ショートアドレスによるユニキャスト
 PANIDとショートアドレスを使用したユニキャスト(1対1通信)
 戻値は受信したACKのRSSIになります。
 
@@ -111,7 +111,7 @@ function send_1() {
 }
 ```
 
-### 5-2.  グループキャスト
+### 6-2.  グループキャスト
 PAN加入の全てが受信するグループキャストです。
 送信先のアドレスには0xFFFFを指定してください。
 戻値は0になります。
@@ -128,7 +128,7 @@ function send_2() {
 }
 ```
 
-### 5-3.  ブロードキャスト
+### 6-3.  ブロードキャスト
 全端末が受信できるブロードキャストです。
 PANIDおよび送信先のアドレスを双方とも0xFFFFにしてください。
 戻値は0になります。
@@ -145,7 +145,7 @@ function send_3() {
 }
 ```
 
-### 5-4.  64bit MACアドレスを使用したユニキャスト(1)
+### 6-4.  64bit MACアドレスを使用したユニキャスト(1)
 64bit MACアドレスを指定するユニキャストです。
 dst_addrが65536以上のとき、自動的に64bit MACアドレスと認識してユニキャストで送信します。
 このときPANIDは0xFFFFに指定されます。
@@ -162,7 +162,7 @@ function send_4() {
 }
 ```
 
-### 5-5.  64bit MACアドレスを使用したユニキャスト(2)
+### 6-5.  64bit MACアドレスを使用したユニキャスト(2)
 64bit MACアドレスを指定するユニキャストです。
 send64関数を使用することで確実に64bit MACアドレスでユニキャストします。
 このときPANIDは0xFFFFに指定されます。
@@ -181,7 +181,7 @@ function send_5() {
 
 
 
-# 6.  その他設定
+# 7.  その他設定
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
@@ -192,7 +192,7 @@ function send_5() {
 
 
 
-## 6.1 eackのデータフォーマット
+## 7.1 eackのデータフォーマット
 
 eackはアドレスごとにackに乗せるデータを指定します。
 
@@ -216,15 +216,12 @@ let eack = [
 ];
 ```
 
-
-
-#7. 終了処理
+# 8. 終了処理
 終了処理です。本サンプルではCtrl+Cを押したときに終了処理が実行されます。
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
 | remove | -- | ハードウエアをシャットダウンしてドライバーをカーネル領域から削除します。 |
-
 
 ```js
 // process exit process

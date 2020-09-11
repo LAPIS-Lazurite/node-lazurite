@@ -1,5 +1,5 @@
 'use strict'
-const LAZURITE = require("../");
+const LAZURITE = require("lazurite");
 
 // Initialize
 // options.be							false(default): little endian,    true: little endian
