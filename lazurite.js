@@ -17,6 +17,34 @@ module.exports = function(config) {
 	let be = config.be || false;					// for debug of endian
 	let binaryMode = config.binaryMode;		// undef development
 	let interval = config.interval || 10;
+
+	/*
+	 * #define EIO						5		// hardware error
+	 * #define EAGAIN					11	// over 10% duty
+	 * #define ENOMEM					12	// data size error
+	 * #define EFAULT					14	// bad pointer
+	 * #define EBUSY					16	// resource busy(CCA)
+	 * #define EINVAL					22	// invalid parameters
+	 * #define EFBIG					27	// File too large
+	 * #define EDEADLK				35	// Resource deadlock would occur
+	 * #define EBADE					52	// crc error
+	 * #define EADDRNOTAVAIL	99	// Cannot assign requested address
+	 * #define ETIMEDOUT			11	// no ack
+	 */
+	const ERROR = {
+		"-5" : "hareware error",
+		"-11" : "over 10% duty",
+		"-12" : "data size error",
+		"-14" : "bad pointer",
+		"-16" : "CCA busy",
+		"-22" : "invalid parameters",
+		"-27" : "payload over size",
+		"-35" : "unknown deadlock",
+		"-52" : "crc error",
+		"-99" : "address error",
+		"-110" : "no ack",
+	};
+
 	node.init= function() {
 		config = config || {};
 		if(isOpen === false) {
@@ -62,6 +90,7 @@ module.exports = function(config) {
 	node.send64 = function(msg) {
 		let ret;
 		let dst_addr;
+		let result = {};
 		if(typeof msg.dst_addr === "string") {
 			dst_addr = BigInt(msg.dst_addr);
 		} else {
@@ -81,11 +110,20 @@ module.exports = function(config) {
 			}
 			ret = lib.send64be(dst_be,msg.payload);
 		}
-		return ret;
+		if(ret >= 0) {
+			result.success = true;
+			result.rssi = ret;
+		} else {
+			result.success = false;
+			result.errcode = ret;
+			result.errmsg = ERROR[ret];
+		}
+		return result;
 	}
 
 	node.send = function(msg) {
 		let ret;
+		let result = {};
 		let dst_addr;
 		if(typeof msg.dst_addr === "string") {
 			dst_addr = BigInt(msg.dst_addr);
@@ -103,18 +141,29 @@ module.exports = function(config) {
 				tmp += ("00"+dst_array[i].toString(16)).substr(-2);
 			}
 			ret = lib.send64le(dst_array,msg.payload);
+			if(ret >= 0) {
+				result.success = true;
+				result.rssi = ret;
+			} else {
+				result.success = false;
+				result.errcode = ret;
+				result.errmsg = ERROR[ret];
+			}
 		} else if(isNaN(msg.panid) === false) {
 			ret = lib.send(parseInt(msg.panid),parseInt(msg.dst_addr),msg.payload);
-			if(ret > 0) {
-				let eack = lib.getEnhanceAck();
-				if(eack.length > 0) {
-					ret.eack = eack;
-				}
+			if(ret >= 0) {
+				result.success = true;
+				result.rssi = ret;
+				result.eack = lib.getEnhanceAck();
+			} else {
+				result.success = false;
+				result.errcode = ret;
+				result.errmsg = ERROR[ret];
 			}
 		} else {
 			throw new Error("lazurite send msg.panid error.\nmsg.dst_addr > 65535 : 64bit addressing mode. msg.panid is not required.\nmsg.dst_addr <= 65535 : short addressing mode. msg.panid is required.\nif force to send 64bit addressing mode in case of msg.dst_addr <=65535,please use send64")
 		}
-		return ret;
+		return result;
 	}
 
 	node.rxEnable = function() {
@@ -167,8 +216,12 @@ module.exports = function(config) {
 		return lib.setBroadcastEnb(on);
 	}
 
+	/* setKey format
+	 *  input :	"" : aes off
+	 *  				128bit(16byte HEX string)
+	 */
 	node.setKey = function(key) {
-		if((typeof key !== "string") && (key.length !== 32)) {
+		if(typeof key !== "string"){
 			throw new Error("key must be string and the length is 32");
 		}
 		return lib.setKey(key);
@@ -231,7 +284,7 @@ module.exports = function(config) {
 				uint8Array[index] = a,index += 1;
 			}
 		}
-		lazurite.lib.setEnhanceAck(uint8Array,buffSize);
+		lib.setEnhanceAck(uint8Array,buffSize);
 	}
 
 	node.setPromiscuous = function(on) {

@@ -373,7 +373,7 @@ static void send64le(const FunctionCallbackInfo<Value>& args) {
 		result = sendfunc64le(dst_addr,data,obj->Length());
 	} else {
 		result = -1;
-	} 
+	}
 #else
 	if(args[1]->IsString() == true) {
 		String::Utf8Value payload(args[1]->ToString());
@@ -822,15 +822,24 @@ static void setKey(const FunctionCallbackInfo<Value>& args) {
 #else
 	String::Utf8Value key(args[0]->ToString());
 #endif
-	if(key.length() != 32) {
+
+	if((key.length() != 0) && (key.length() != 32)) {
 		fprintf (stderr, "lazurite_setKey length error.\n");
 		args.GetReturnValue().Set(Boolean::New(isolate,false));
 		return;
 	}
-	if(setaeskey(ToCString(key)) != 0){
-		fprintf (stderr, "lazurite_setKey error.\n");
-		args.GetReturnValue().Set(Boolean::New(isolate,false));
-		return;
+	if(key.length() == 0) {
+		if (setaeskey(NULL) != 0){
+			fprintf (stderr, "lazurite_setKey error.\n");
+			args.GetReturnValue().Set(Boolean::New(isolate,false));
+			return;
+		}
+	} else {
+		if (setaeskey(ToCString(key)) != 0){
+			fprintf (stderr, "lazurite_setKey error.\n");
+			args.GetReturnValue().Set(Boolean::New(isolate,false));
+			return;
+		}
 	}
 	args.GetReturnValue().Set(Boolean::New(isolate,true));
 	return;
@@ -920,13 +929,13 @@ static void getEnhanceAck(const FunctionCallbackInfo<Value>& args) {
 
 #if (V8_MAJOR_VERSION == 8)
 	obj->Set(context,String::NewFromUtf8(isolate,"payload").ToLocalChecked(),str);
-	obj->Set(context,String::NewFromUtf8(isolate,"length").ToLocalChecked(),Integer::New(isolate,size));
+	//obj->Set(context,String::NewFromUtf8(isolate,"length").ToLocalChecked(),Integer::New(isolate,size));
 #else
 	obj->Set(String::NewFromUtf8(isolate,"payload"),str);
-	obj->Set(String::NewFromUtf8(isolate,"length"),Integer::New(isolate,size));
+	//obj->Set(String::NewFromUtf8(isolate,"length"),Integer::New(isolate,size));
 #endif
 
-	args.GetReturnValue().Set(obj);
+	args.GetReturnValue().Set(str);
 	return;
 }
 

@@ -179,8 +179,21 @@ function send_5() {
 }
 ```
 
-#6. 終了処理
+#6. その他設定
+
+| 関数 |parameters | 機能 |
+| --- | --- | --- |
+| setKey(key) | key | AES128bitの鍵情報を設定するための関数です。<br>key="": AES128bitを解除します。<br>key=16byte HEX String : AES1238bitによる暗号を有効にします。<br> 暗号鍵は	LazuriteIDEではLazuriteIde/bin/aes_keygen.exe, Raspberry Piではdriver/LazDriver/lib/aes_keygenで生成できます。|
+| setAckRea(on) | on | ackの有効/無効を設定する関数です。<br> on=false: ACKを強制的にOFFにします。<br> on=true: ACK受信が可能なときはACKを有効にします。|
+
+
+#7. 終了処理
 終了処理です。本サンプルではCtrl+Cを押したときに終了処理が実行されます。
+
+| 関数 |parameters | 機能 |
+| --- | --- | --- |
+| remove | -- | ハードウエアをシャットダウンしてドライバーをカーネル領域から削除します。 |
+
 
 ```js
 // process exit process
