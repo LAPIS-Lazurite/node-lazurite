@@ -1,6 +1,6 @@
 {
   "name": "lazurite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "node for LazDriver by v8",
   "main": "lazurite.js",
   "directories": {
