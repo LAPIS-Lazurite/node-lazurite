@@ -4,6 +4,12 @@ node for LazDriver by v8
 node-lazuriteはnode.jsで動作するlazuriteのドライバインタフェースです。
 サンプルはexample/sample_trx.jsを参照してください。
 
+## 1. インストール
+
+```
+npm install lazurite
+```
+
 ## 2. 初期化
 
 | 関数 |parameters | 機能 |
