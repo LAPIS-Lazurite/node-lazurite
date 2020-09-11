@@ -1,17 +1,9 @@
 /*
  * node-lazurite
- *
  * preriminary version
  *
- * not implemented
- *  setKey(key)
- *  setBroadcastEnb(on)
- *  setPromiscous(on)
- *  setEnhanceAck(eack)
- *  getEnhanceAck()
- *
- *
  */
+
 module.exports = function(config) {
 	config = config || {};
 	let node = this;
@@ -24,6 +16,7 @@ module.exports = function(config) {
 	let isRxEnable = false;
 	let be = config.be || false;					// for debug of endian
 	let binaryMode = config.binaryMode;		// undef development
+	let interval = config.interval || 10;
 	node.init= function() {
 		config = config || {};
 		if(isOpen === false) {
@@ -56,23 +49,16 @@ module.exports = function(config) {
 			throw new Error("lazurite begin fail.");
 		}
 	}
-	node.getMyAddr64 = function() {
-		let myaddr64 = lib.getMyAddr64();
-		let d = "0x";
-		for(let a of myaddr64) {
-			d = d + ("00"+a.toString(16)).substr(-2);
+
+	node.close = function() {
+		if(isBegin === true) {
+			isBegin = false;
+			if(!lib.close()) {
+				throw new Error("lazurite close fail.");
+			}
 		}
-		return d;
 	}
-	node.getMyAddress = function() {
-		return lib.getMyAddress();
-	}
-	node.setMyAddress = function(a) {
-		if(isNaN(a) === true) {
-			throw new Error("lazurite setMyAddress panid is not a number");
-		}
-		return lib.setMyAddress(parseInt(a));
-	}
+
 	node.send64 = function(msg) {
 		let ret;
 		let dst_addr;
@@ -97,6 +83,7 @@ module.exports = function(config) {
 		}
 		return ret;
 	}
+
 	node.send = function(msg) {
 		let ret;
 		let dst_addr;
@@ -118,19 +105,18 @@ module.exports = function(config) {
 			ret = lib.send64le(dst_array,msg.payload);
 		} else if(isNaN(msg.panid) === false) {
 			ret = lib.send(parseInt(msg.panid),parseInt(msg.dst_addr),msg.payload);
+			if(ret > 0) {
+				let eack = lib.getEnhanceAck();
+				if(eack.length > 0) {
+					ret.eack = eack;
+				}
+			}
 		} else {
 			throw new Error("lazurite send msg.panid error.\nmsg.dst_addr > 65535 : 64bit addressing mode. msg.panid is not required.\nmsg.dst_addr <= 65535 : short addressing mode. msg.panid is required.\nif force to send 64bit addressing mode in case of msg.dst_addr <=65535,please use send64")
 		}
 		return ret;
 	}
-	node.on = function(type,callback) {
-		if(type === "rx") {
-			if(timer === null) {
-				timer = setInterval(timerFunc,10);
-			}
-			emitter.on(type,callback);
-		}
-	}
+
 	node.rxEnable = function() {
 		if(isRxEnable === false) {
 			if(!lib.rxEnable()) {
@@ -138,6 +124,7 @@ module.exports = function(config) {
 			};
 		}
 	}
+
 	node.rxDisable = function() {
 		if(isRxEnable === true) {
 			if(!lib.rxDisable()) {
@@ -145,6 +132,124 @@ module.exports = function(config) {
 			}
 		}
 	}
+
+	node.getMyAddr64 = function() {
+		let myaddr64 = lib.getMyAddr64();
+		let d = "0x";
+		for(let a of myaddr64) {
+			d = d + ("00"+a.toString(16)).substr(-2);
+		}
+		return d;
+	}
+
+	node.getMyAddress = function() {
+		return lib.getMyAddress();
+	}
+
+	node.setMyAddress = function(a) {
+		if(isNaN(a) === true) {
+			throw new Error("lazurite setMyAddress panid is not a number");
+		}
+		return lib.setMyAddress(parseInt(a));
+	}
+
+	node.setAckReq = function(on) {
+		if(typeof on !== "boolean") {
+			throw new Error("lazurite setAckReq must be boolean");
+		}
+		return lib.setAckReq(on);
+	}
+
+	node.setBroadcastEnb = function(on) {
+		if(typeof on !== "boolean") {
+			throw new Error("lazurite setBroadcastEnb must be boolean");
+		}
+		return lib.setBroadcastEnb(on);
+	}
+
+	node.setKey = function(key) {
+		if((typeof key !== "string") && (key.length !== 32)) {
+			throw new Error("key must be string and the length is 32");
+		}
+		return lib.setKey(key);
+	}
+
+	/* setEnhanceAck format
+	 *  input: [
+	 *  	{
+	 *  		addr: (target short address),
+	 *  		data: [ enhance ack data array (uint_8). max length = 16 ]
+	 *  	},
+	 *  	....
+	 *  	{
+	 *  		addr: 0xFFFF,					// in case of address unmatch
+	 *  		data: [ enhance ack data array (uint_8). max length = 16 ]
+	 *  	}
+	 *  ]
+	 *
+	 *  output: Uint8Array [
+	 *  	[headr]
+	 *  	0: lower byte of device count
+	 *  	1: upper byte of device count
+	 *  	2: lower byte of ack size
+	 *  	3: uptter byte of ack size
+	 *  	[data]
+	 *		4 + n * (ackSize + 2) + 0: lower byte of target short address
+	 *		4 + n * (ackSize + 2) + 1: upper byte of target short address
+	 *		4 + n * (ackSize + 2) + 2: ack data[0]
+	 *		4 + n * (ackSize + 2) + 3: ack data[1]
+	 *		...
+	 *  ]
+	 */
+	node.setEnhanceAck = function(eack) {
+		let devCount = eack.data.length;
+		let ackSize = eack.data[0].ack.length;
+		if((devCount == 0) || (ackSize == 0)) {
+			lib.setEnhanceAck(null,0);
+			return;
+		}
+		if(ackSize > 16) {
+			lib.setEnhanceAck(null,0);
+			throw new Error('EnhanceAck length error');
+		}
+		let buffSize =  devCount * (ackSize + 2)  + 4;
+		let buffer = new ArrayBuffer(buffSize);
+		let uint8Array = new Uint8Array(buffer,0,buffSize);
+		let index = 4;
+		uint8Array[0] = devCount&0x0ff;
+		uint8Array[1] = devCount >> 8;
+		uint8Array[2] = ackSize&0x0ff;
+		uint8Array[3] = ackSize >> 8;
+		for(var d of eack.data) {
+			if(ackSize != d.ack.length) {
+				lazurite.lib.setEnhanceAck(null,0);
+				throw new Error(`Lazurite EnhanceAck different length is included. ${d}`);
+			}
+			uint8Array[index] = d.addr&0x0ff,index += 1;
+			uint8Array[index] = d.addr>>8,index += 1;
+			for(var a of d.ack) {
+				uint8Array[index] = a,index += 1;
+			}
+		}
+		lazurite.lib.setEnhanceAck(uint8Array,buffSize);
+	}
+
+	node.setPromiscuous = function(on) {
+		if(isBegin) {
+			throw new Error("lazurite setPromiscous can be change after close");
+		}
+		return lib.setPromisecous(on);
+	}
+
+	node.on = function(type,callback) {
+		if(type === "rx") {
+			if(timer === null) {
+				timer = setInterval(timerFunc,interval);
+			}
+			emitter.on(type,callback);
+		}
+	}
+
 	node.removeListener = function(type,listener) {
 		emitter.removeListener(type,listener);
 		if(emitter.listenerCount("rx") === 0) {
@@ -152,14 +257,7 @@ module.exports = function(config) {
 			timer = null;
 		}
 	}
-	node.close = function() {
-		if(isBegin === true) {
-			isBegin = false;
-			if(!lib.close()) {
-				throw new Error("lazurite close fail.");
-			};
-		}
-	}
+
 	node.remove = function() {
 		if(isOpen === true) {
 			if(timer) clearInterval(timer);
@@ -170,6 +268,7 @@ module.exports = function(config) {
 			isOpen = false;
 		}
 	}
+
 	function timerFunc() {
 		let data = lib.read(node.binaryMode);
 		if(data.payload.length > 0) {

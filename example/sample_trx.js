@@ -1,9 +1,11 @@
 'use strict'
-const LAZURITE = require("../lazurite");
+const LAZURITE = require("../");
 
 // Initialize
 // options.be							false(default): little endian,    true: little endian
 // options.binaryMode			false(default): payload = string, true: binary mode (under develop)
+// options.interval				ms of read interval time. default = 10(ms)
+//
 let options;
 let lazurite = new LAZURITE(options);
 lazurite.init();
