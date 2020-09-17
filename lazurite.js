@@ -1,6 +1,19 @@
 /*
  * node-lazurite
- * preriminary version
+ *
+ * Copyright [Naotaka Saito]
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  */
 
@@ -13,7 +26,6 @@ module.exports = function(config) {
 	let isOpen = false;
 	let timer = null;
 	let isBegin = false;
-	let isRxEnable = false;
 	let be = config.be || false;					// for debug of endian
 	let binaryMode = config.binaryMode;		// undef development
 	let interval = config.interval || 10;
@@ -169,18 +181,14 @@ module.exports = function(config) {
 	}
 
 	node.rxEnable = function() {
-		if(isRxEnable === false) {
-			if(!lib.rxEnable()) {
-				throw new Error("lazurite rxEnable fail.");
-			};
-		}
+		if(!lib.rxEnable()) {
+			throw new Error("lazurite rxEnable fail.");
+		};
 	}
 
 	node.rxDisable = function() {
-		if(isRxEnable === true) {
-			if(!lib.rxDisable()) {
-				throw new Error("lazurite rxDisable fail.");
-			}
+		if(!lib.rxDisable()) {
+			throw new Error("lazurite rxDisable fail.");
 		}
 	}
 
