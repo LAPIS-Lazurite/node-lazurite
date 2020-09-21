@@ -105,8 +105,12 @@ module.exports = function(config) {
 		let result = {};
 		if(typeof msg.dst_addr === "string") {
 			dst_addr = BigInt(msg.dst_addr);
-		} else {
+		} else if(typeof msg.dst_addr === "number") {
+			dst_addr = BigInt(msg.dst_addr);
+		} else if(typeof msg.dst_addr === "bigint") {
 			dst_addr = msg.dst_addr;
+		} else {
+			throw new Error('dst_addr format error');
 		}
 		let dst_array = [];
 		for(let i = 0; i < 8 ; i++) {
@@ -336,14 +340,29 @@ module.exports = function(config) {
 		let data = lib.read(node.binaryMode);
 		if(data.payload.length > 0) {
 			for(let d of data.payload) {
-				let addr=0;
-				for(let i = d.src_addr.length -1 ; i >= 0; i--) {
-					addr = addr*256 + d.src_addr[i];
+				let addr;
+				if(d.src_addr.length === 8) {
+					addr = BigInt(0);
+					for(let i = d.src_addr.length -1 ; i >= 0; i--) {
+						addr = addr*256n + BigInt(d.src_addr[i]);
+					}
+				} else {
+					addr = 0;
+					for(let i = d.src_addr.length -1 ; i >= 0; i--) {
+						addr = addr*256 + d.src_addr[i];
+					}
 				}
 				d.src_addr = addr;
-				addr = 0;
-				for(let i = d.dst_addr.length-1; i >= 0; i--) {
-					addr = addr*256 + d.dst_addr[i];
+				if(d.dst_addr.length === 8) {
+					addr = BigInt(0);
+					for(let i = d.dst_addr.length-1; i >= 0; i--) {
+						addr = addr*256n + BigInt(d.dst_addr[i]);
+					}
+				} else {
+					addr = 0;
+					for(let i = d.dst_addr.length-1; i >= 0; i--) {
+						addr = addr*256 + d.dst_addr[i];
+					}
 				}
 				d.dst_addr = addr;
 				d.rxtime = d.sec* 1000+parseInt(d.nsec/1000000);
