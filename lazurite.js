@@ -58,16 +58,16 @@ module.exports = function(config) {
 	};
 
 	node.init= function() {
+		let result;
 		config = config || {};
 		if(isOpen === false) {
 			isOpen = true;
-			if(!lib.dlopen()) {
-				throw new Error("lazurite dlopen fail");
-			}
-			if(!lib.init()) {
-				throw new Error("lazurite init fail");
+			result = lib.dlopen();
+			if(result === true) {
+				result = lib.init();
 			}
 		}
+		return result;
 	}
 	node.begin = function(msg) {
 		if(!msg.ch) {
@@ -328,9 +328,8 @@ module.exports = function(config) {
 	node.remove = function() {
 		if(isOpen === true) {
 			if(timer) clearInterval(timer);
+			timer = null;
 			emitter.removeAllListeners();
-			lib.close();
-			isBegin = false;
 			lib.remove();
 			isOpen = false;
 		}

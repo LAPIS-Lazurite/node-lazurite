@@ -94,6 +94,8 @@ static void dlopen(const FunctionCallbackInfo<Value>& args) {
 		handle = dlopen ("liblazurite.so", RTLD_LAZY);
 		if (!handle) {
 			fprintf (stderr, "%s\n", dlerror());
+			isolate->ThrowException(String::NewFromUtf8(isolate, "liblazurite.so open fail"));
+			return;
 		} else {
 			initfunc     = (int (*)(void))find(handle, "lazurite_init");
 			beginfunc    = (int (*)(uint8_t, uint16_t, uint8_t,uint8_t))find(handle, "lazurite_begin");
@@ -138,19 +140,22 @@ static void init(const FunctionCallbackInfo<Value>& args) {
 	if(!initialized) {
 		if(!initfunc) {
 			fprintf (stderr, "liblzgw_open fail.\n");
-			args.GetReturnValue().Set(Boolean::New(isolate,false));
+			isolate->ThrowException(String::NewFromUtf8(isolate, "lazurite_init is not found"));
 			return;
 		}
 		int result = initfunc();
-		if(result != 0) {
+		if(result < 0) {
 			fprintf (stderr, "liblzgw_open fail = %d\n", result);
-			args.GetReturnValue().Set(Boolean::New(isolate,false));
+			isolate->ThrowException(String::NewFromUtf8(isolate, "lazurite_init fail"));
 			return;
+		} else if(result == 0) {
+			args.GetReturnValue().Set(Boolean::New(isolate,true));
+			initialized = true;
+		} else {
+			args.GetReturnValue().Set(Boolean::New(isolate,false));
+			initialized = true;
 		}
-		initialized = true;
 	}
-
-	args.GetReturnValue().Set(Boolean::New(isolate,true));
 	return;
 }
 
@@ -974,8 +979,11 @@ static void remove(const FunctionCallbackInfo<Value>& args) {
 			return;
 		}
 		int result = removefunc();
-		if(result != 0) {
-			fprintf (stderr, "remove driver from kernel %d", result);
+		if(result < 0) {
+			isolate->ThrowException(String::NewFromUtf8(isolate, "liblazurite.so rmmod fail"));
+			return;
+		} else if(result > 0) {
+			printf ("lazdriver is remain in kernel %d\n", result);
 			args.GetReturnValue().Set(Boolean::New(isolate,false));
 			return;
 		}
