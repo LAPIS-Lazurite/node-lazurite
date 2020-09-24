@@ -209,12 +209,12 @@ static void close(const FunctionCallbackInfo<Value>& args) {
 			return;
 		}
 		int result = closefunc();
+		began = false;
 		if(result != 0) {
 			fprintf (stderr, "fail to stop RF %d", result);
 			args.GetReturnValue().Set(Boolean::New(isolate,false));
 			return;
 		}
-		began = false;
 	}
 	args.GetReturnValue().Set(Boolean::New(isolate,true));
 	return;
@@ -273,6 +273,7 @@ static void send64be(const FunctionCallbackInfo<Value>& args) {
 #endif
 
 	int result;
+	/*
 	printf("%02x%02x%02x%02x%02x%02x%02x%02x\n",
 			dst_addr[0],
 			dst_addr[1],
@@ -282,6 +283,7 @@ static void send64be(const FunctionCallbackInfo<Value>& args) {
 			dst_addr[5],
 			dst_addr[6],
 			dst_addr[7]);
+			*/
 #if (V8_MAJOR_VERSION == 6) || (V8_MAJOR_VERSION == 7) || (V8_MAJOR_VERSION == 8)
 	if(args[1]->IsString() == true) {
 		String::Utf8Value payload(isolate,args[1]->ToString(context).ToLocalChecked());
@@ -480,12 +482,12 @@ static void rxDisable(const FunctionCallbackInfo<Value>& args) {
 			return;
 		}
 		int result = disablefunc();
+		enabled = false;
 		if(result != 0) {
 			fprintf (stderr, "lazurite_rxDisable fail = %d\n", result);
 			args.GetReturnValue().Set(Boolean::New(isolate,false));
 			return;
 		}
-		enabled = false;
 	}
 	args.GetReturnValue().Set(Boolean::New(isolate,true));
 	return;

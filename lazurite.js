@@ -88,14 +88,13 @@ module.exports = function(config) {
 		if(!lib.begin(msg.ch,msg.panid,msg.baud,msg.pwr)) {
 			throw new Error("lazurite begin fail.");
 		}
+		isBegin = true;
 	}
 
 	node.close = function() {
-		if(isBegin === true) {
-			isBegin = false;
-			if(!lib.close()) {
-				throw new Error("lazurite close fail.");
-			}
+		isBegin = false;
+		if(!lib.close()) {
+			throw new Error("lazurite close fail.");
 		}
 	}
 
