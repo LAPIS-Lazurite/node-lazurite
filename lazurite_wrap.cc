@@ -93,8 +93,12 @@ static void dlopen(const FunctionCallbackInfo<Value>& args) {
 	if(!opened) {
 		handle = dlopen ("liblazurite.so", RTLD_LAZY);
 		if (!handle) {
-			fprintf (stderr, "%s\n", dlerror());
+#if (V8_MAJOR_VERSION >= 8)
+			isolate->ThrowException(Exception::TypeError(
+						String::NewFromUtf8(isolate, "liblazurite.so open fail").ToLocalChecked()));
+#else
 			isolate->ThrowException(String::NewFromUtf8(isolate, "liblazurite.so open fail"));
+#endif
 			return;
 		} else {
 			initfunc     = (int (*)(void))find(handle, "lazurite_init");
@@ -139,14 +143,22 @@ static void init(const FunctionCallbackInfo<Value>& args) {
 
 	if(!initialized) {
 		if(!initfunc) {
-			fprintf (stderr, "liblzgw_open fail.\n");
+#if (V8_MAJOR_VERSION >= 8)
+			isolate->ThrowException(Exception::TypeError(
+						String::NewFromUtf8(isolate, "lazurite_init is not found").ToLocalChecked()));
+#else
 			isolate->ThrowException(String::NewFromUtf8(isolate, "lazurite_init is not found"));
+#endif
 			return;
 		}
 		int result = initfunc();
 		if(result < 0) {
-			fprintf (stderr, "liblzgw_open fail = %d\n", result);
+#if (V8_MAJOR_VERSION >= 8)
+			isolate->ThrowException(Exception::TypeError(
+						String::NewFromUtf8(isolate, "lazurite_init fail").ToLocalChecked()));
+#else
 			isolate->ThrowException(String::NewFromUtf8(isolate, "lazurite_init fail"));
+#endif
 			return;
 		} else if(result == 0) {
 			args.GetReturnValue().Set(Boolean::New(isolate,true));
@@ -976,22 +988,30 @@ static void remove(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = args.GetIsolate();
 	if(initialized) {
 		if(!removefunc) {
-			fprintf (stderr, "remove driver from kernel");
-			args.GetReturnValue().Set(Boolean::New(isolate,false));
+#if (V8_MAJOR_VERSION >= 8)
+			isolate->ThrowException(Exception::TypeError(
+						String::NewFromUtf8(isolate, "lazurite_wrap removefunc.not found").ToLocalChecked()));
+#else
+			isolate->ThrowException(String::NewFromUtf8(isolate, "lazurite_wrap removefunc.not found"));
+#endif
 			return;
 		}
 		int result = removefunc();
+		initialized = false;
 		if(result < 0) {
+#if (V8_MAJOR_VERSION >= 8)
+			isolate->ThrowException(Exception::TypeError(
+						String::NewFromUtf8(isolate, "liblazurite.so rmmod fail").ToLocalChecked()));
+#else
 			isolate->ThrowException(String::NewFromUtf8(isolate, "liblazurite.so rmmod fail"));
+#endif
 			return;
 		} else if(result > 0) {
-			printf ("lazdriver is remain in kernel %d\n", result);
 			args.GetReturnValue().Set(Boolean::New(isolate,false));
-			return;
+		} else {
+			args.GetReturnValue().Set(Boolean::New(isolate,true));
 		}
-		initialized = false;
 	}
-	args.GetReturnValue().Set(Boolean::New(isolate,true));
 	return;
 }
 

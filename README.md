@@ -4,6 +4,8 @@ node for LazDriver by v8
 node-lazuriteはnode.jsで動作するlazuriteのドライバインタフェースです。
 サンプルはexample/sample_trx.jsを参照してください。
 
+対応中のNode.js:  v8,v10,v12,v14
+
 ## 1. インストール
 
 ```
@@ -14,10 +16,11 @@ npm install lazurite
 
 | 関数 |parameters | 機能 |
 | --- | --- | --- |
-| (create) | options.interval | 読み出しインターバルです。デフォルトでは10ms間隔でデータの有無をチェックしています |
-| (create) | options.be | 送信時の関数にsend64beを指定するときに使用します。通常は設定不要です。|
-| (create) | options.binaryMode | 開発中の機能 |
+| (new) | options.interval | 読み出しインターバルです。デフォルトでは10ms間隔でデータの有無をチェックしています |
+| (new) | options.be | 送信時の関数にsend64beを指定するときに使用します。通常は設定不要です。|
+| (new) | options.binaryMode | 開発中の機能 |
 | init | -- | ドライバーのロードやハードウエアの初期化を行います |
+| init | 戻り値 | true: 初期化成功<br>false: ドライバが常駐していたが初期化成功<br> error: 失敗 |
 
 
 ```js
